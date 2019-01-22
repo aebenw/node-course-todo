@@ -1,39 +1,22 @@
-var mongoose = require('mongoose');
+var express = require('express');
+var bodyParser = require('body-parser');
+var {mongoose} = require('./db/mongoose');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
-mongoose.promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+var app = express();
 
-//the above code is blocking, anything down here won't run until a connection is made
+app.use(bodyParser.json());
 
-//now we're going to create models
-var Todo = mongoose.model('ToDo', {
-  text: {
-    type: String
-  },
-  completed: {
-    type: Boolean
-  },
-  completedAt: {
-    type: Number
-  }
+app.post('/todos', (req, res) => {
+  const todo = new Todo({
+    text: req.body.text
+  });
+
+  todo.save().then((doc) => {
+    res.send(doc);
+  }, (err) => res.status(400).send(err));
+
 });
 
-//above is a model creationg
-//below is creating an instance of a model;
-var newTodo = new Todo({
-  text: "cook dinner"
-});
-
-var secondToDo = new Todo({
-  text: "walk the dog",
-  completed: true,
-  completedAt: Date.now()
-});
-//below is saving our new instance to our db
-// newTodo.save().then((res) =>{
-//   console.log('Todo Saved', res);
-// }, (e) => {
-//   console.log('unable to save');
-// });
-
-secondToDo.save().then(res => console.log(res), err => console.log(err));
+app.listen(3000, () => console.log('started on port 3000'));
